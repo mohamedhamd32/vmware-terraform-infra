@@ -26,3 +26,4 @@ module "vms" {
   vm_disk_size_gb = var.vm_disk_size_gb
 }
 
+

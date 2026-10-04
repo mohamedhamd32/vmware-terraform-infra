@@ -30,13 +30,33 @@ variable "datacenter" {
 }
 
 variable "cluster" {
-  description = "vSphere compute cluster name"
+  description = "vSphere compute cluster name; leave empty for a standalone ESXi host"
   type        = string
+  default     = ""
+}
+
+variable "esxi_host" {
+  description = "ESXi host name/IP (used when cluster is empty)"
+  type        = string
+  default     = ""
+}
+
+variable "guest_id" {
+  description = "Guest OS id for blank VMs (no template)"
+  type        = string
+  default     = "ubuntu64Guest"
+}
+
+variable "iso_path" {
+  description = "Optional datastore ISO path to attach to blank VMs"
+  type        = string
+  default     = ""
 }
 
 variable "template_name" {
-  description = "Name of the existing VM template to clone"
+  description = "Template to clone; leave empty to create blank VMs"
   type        = string
+  default     = ""
 }
 
 variable "vm_count" {
@@ -101,3 +121,4 @@ variable "vm_disk_size_gb" {
   type        = number
   default     = 40
 }
+
