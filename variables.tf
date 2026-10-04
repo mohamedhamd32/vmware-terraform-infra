@@ -35,13 +35,13 @@ variable "cluster" {
 variable "datastore_name" {
   description = "Datastore to deploy VMs on"
   type        = string
-  default     = "datastore-1"
+  default     = "datastore-HDD"
 }
 
 variable "network_name" {
   description = "Port group / network name to attach VMs to"
   type        = string
-  default     = "port-group"
+  default     = "VM Network"
 }
 
 variable "template_name" {
@@ -93,11 +93,11 @@ variable "vm_cpus" {
 variable "vm_memory" {
   description = "Memory (MB) per VM"
   type        = number
-  default     = 4096
+  default     = 1024
 }
 
 variable "vm_disk_size_gb" {
   description = "Primary disk size (GB) per VM"
   type        = number
-  default     = 40
+  default     = 10
 }

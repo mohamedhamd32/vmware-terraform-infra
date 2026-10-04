@@ -54,10 +54,10 @@ variable "vm_cpus" {
 
 variable "vm_memory" {
   type    = number
-  default = 4096
+  default = 1024
 }
 
 variable "vm_disk_size_gb" {
   type    = number
-  default = 40
+  default = 10
 }
