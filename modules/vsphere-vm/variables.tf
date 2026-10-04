@@ -1,21 +1,16 @@
 variable "datacenter" {
-  type = string
+  type        = string
+  description = "vSphere datacenter name"
 }
 
 variable "cluster" {
-  type = string
-}
-
-variable "datastore_name" {
-  type = string
-}
-
-variable "network_name" {
-  type = string
+  type        = string
+  description = "vSphere compute cluster name"
 }
 
 variable "template_name" {
-  type = string
+  type        = string
+  description = "Name of the existing VM template to clone"
 }
 
 variable "vm_count" {
@@ -28,36 +23,28 @@ variable "vm_name_prefix" {
   default = "app-vm"
 }
 
+variable "gateway" {
+  type    = string
+  default = "192.168.1.1"
+}
+
+# --- Fixed infrastructure values (hardcoded per requirements) ---
+variable "datastore_name" {
+  type    = string
+  default = "datastore-1"
+}
+
+variable "network_name" {
+  type    = string
+  default = "port-group"
+}
+
 variable "ip_start" {
-  description = "First IP in the range, e.g. 192.168.1.200"
-  type        = string
+  type    = string
+  default = "192.168.1.200"
 }
 
 variable "netmask_cidr" {
   type    = number
   default = 24
-}
-
-variable "gateway" {
-  type = string
-}
-
-variable "dns_servers" {
-  type    = list(string)
-  default = ["8.8.8.8", "8.8.4.4"]
-}
-
-variable "vm_cpus" {
-  type    = number
-  default = 2
-}
-
-variable "vm_memory" {
-  type    = number
-  default = 1024
-}
-
-variable "vm_disk_size_gb" {
-  type    = number
-  default = 10
 }
