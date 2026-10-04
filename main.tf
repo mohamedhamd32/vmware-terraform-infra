@@ -11,6 +11,9 @@ module "vms" {
   datacenter    = var.datacenter
   cluster       = var.cluster
   template_name = var.template_name
+  esxi_host     = var.esxi_host
+  guest_id      = var.guest_id
+  iso_path      = var.iso_path
 
   vm_count       = var.vm_count
   vm_name_prefix = var.vm_name_prefix
@@ -25,5 +28,6 @@ module "vms" {
   vm_memory       = var.vm_memory
   vm_disk_size_gb = var.vm_disk_size_gb
 }
+
 
 
