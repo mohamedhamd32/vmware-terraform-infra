@@ -2,14 +2,12 @@ variable "vsphere_user" {
   description = "vSphere username"
   type        = string
   sensitive   = true
-  #default     = var.vsphere_user
 }
 
 variable "vsphere_password" {
   description = "vSphere password"
   type        = string
   sensitive   = true
-  #default     = var.vsphere_password
 }
 
 variable "vsphere_server" {
@@ -37,6 +35,24 @@ variable "cluster" {
 
 variable "esxi_host" {
   description = "ESXi host name/IP (used when cluster is empty)"
+  type        = string
+  default     = ""
+}
+
+variable "datastore_name" {
+  description = "Datastore for the VMs"
+  type        = string
+  default     = "datastore-1"
+}
+
+variable "network_name" {
+  description = "Port group / network name"
+  type        = string
+  default     = "port-group"
+}
+
+variable "folder_path" {
+  description = "Optional vCenter VM inventory folder path, e.g. 'app/prod'. Leave empty to skip folder placement."
   type        = string
   default     = ""
 }
@@ -77,19 +93,10 @@ variable "gateway" {
   default     = "192.168.1.1"
 }
 
-variable "datastore_name" {
-  description = "Datastore for the VMs"
-  type        = string
-}
-
-variable "network_name" {
-  description = "Port group / network name"
-  type        = string
-}
-
 variable "ip_start" {
   description = "First IP address; subsequent VMs increment the last octet"
   type        = string
+  default     = "192.168.1.200"
 }
 
 variable "netmask_cidr" {
@@ -122,3 +129,8 @@ variable "vm_disk_size_gb" {
   default     = 40
 }
 
+variable "tag_ids" {
+  description = "Optional list of vSphere tag IDs to assign to each VM (create them with vsphere_tag_category/vsphere_tag resources separately)"
+  type        = list(string)
+  default     = []
+}

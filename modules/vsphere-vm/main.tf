@@ -4,22 +4,27 @@ locals {
   ip_base  = "${local.ip_parts[0]}.${local.ip_parts[1]}.${local.ip_parts[2]}"
   ip_first = tonumber(local.ip_parts[3])
 
-  vm_ips = [for i in range(var.vm_count) : "${local.ip_base}.${local.ip_first + i}"]
-
   use_template = var.template_name != ""
   template     = local.use_template ? data.vsphere_virtual_machine.template[0] : null
 
-  resource_pool_id = var.cluster != "" ? data.vsphere_compute_cluster.cluster[0].resource_pool_id : data.vsphere_host.host[0].resource_pool_id
-  host_system_id   = var.cluster == "" ? data.vsphere_host.host[0].id : null
+  # for_each keyed by VM name instead of count: deleting one VM no longer
+  # forces recreation/renumbering of every VM after it.
+  vm_map = {
+    for i in range(var.vm_count) :
+    "${var.vm_name_prefix}-${format("%02d", i + 1)}" => {
+      ip = "${local.ip_base}.${local.ip_first + i}"
+    }
+  }
 }
 
 resource "vsphere_virtual_machine" "vm" {
-  count = var.vm_count
+  for_each = local.vm_map
 
-  name             = "${var.vm_name_prefix}-${format("%02d", count.index + 1)}"
-  resource_pool_id = local.resource_pool_id
-  host_system_id   = local.host_system_id
-  datastore_id     = data.vsphere_datastore.datastore.id
+  name             = each.key
+  resource_pool_id = var.resource_pool_id
+  host_system_id   = var.host_system_id
+  datastore_id     = var.datastore_id
+  folder           = var.folder_path
 
   num_cpus = var.vm_cpus
   memory   = var.vm_memory
@@ -31,8 +36,10 @@ resource "vsphere_virtual_machine" "vm" {
   wait_for_guest_net_timeout = local.use_template ? 5 : 0
   wait_for_guest_ip_timeout  = 0
 
+  tags = length(var.tag_ids) > 0 ? var.tag_ids : null
+
   network_interface {
-    network_id   = data.vsphere_network.network.id
+    network_id   = var.network_id
     adapter_type = local.use_template ? local.template.network_interface_types[0] : "vmxnet3"
   }
 
@@ -46,7 +53,7 @@ resource "vsphere_virtual_machine" "vm" {
   dynamic "cdrom" {
     for_each = !local.use_template && var.iso_path != "" ? [1] : []
     content {
-      datastore_id = data.vsphere_datastore.datastore.id
+      datastore_id = var.datastore_id
       path         = var.iso_path
     }
   }
@@ -58,12 +65,12 @@ resource "vsphere_virtual_machine" "vm" {
 
       customize {
         linux_options {
-          host_name = "${var.vm_name_prefix}-${format("%02d", count.index + 1)}"
+          host_name = each.key
           domain    = "local"
         }
 
         network_interface {
-          ipv4_address = local.vm_ips[count.index]
+          ipv4_address = each.value.ip
           ipv4_netmask = var.netmask_cidr
         }
 

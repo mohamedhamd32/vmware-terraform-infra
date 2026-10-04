@@ -5,13 +5,29 @@ provider "vsphere" {
   allow_unverified_ssl = var.allow_unverified_ssl
 }
 
+# Resolves datacenter/cluster-or-host/datastore/network/folder once, shared by the VM module.
+module "network" {
+  source = "./modules/vsphere-network"
+
+  datacenter     = var.datacenter
+  cluster        = var.cluster
+  esxi_host      = var.esxi_host
+  datastore_name = var.datastore_name
+  network_name   = var.network_name
+  folder_path    = var.folder_path
+}
+
 module "vms" {
   source = "./modules/vsphere-vm"
 
-  datacenter    = var.datacenter
-  cluster       = var.cluster
+  datacenter_id    = module.network.datacenter_id
+  resource_pool_id = module.network.resource_pool_id
+  host_system_id   = module.network.host_system_id
+  datastore_id     = module.network.datastore_id
+  network_id       = module.network.network_id
+  folder_path      = module.network.folder_path
+
   template_name = var.template_name
-  esxi_host     = var.esxi_host
   guest_id      = var.guest_id
   iso_path      = var.iso_path
 
@@ -19,15 +35,13 @@ module "vms" {
   vm_name_prefix = var.vm_name_prefix
   gateway        = var.gateway
 
-  datastore_name  = var.datastore_name
-  network_name    = var.network_name
-  ip_start        = var.ip_start
-  netmask_cidr    = var.netmask_cidr
-  dns_servers     = var.dns_servers
+  ip_start     = var.ip_start
+  netmask_cidr = var.netmask_cidr
+  dns_servers  = var.dns_servers
+
   vm_cpus         = var.vm_cpus
   vm_memory       = var.vm_memory
   vm_disk_size_gb = var.vm_disk_size_gb
+
+  tag_ids = var.tag_ids
 }
-
-
-

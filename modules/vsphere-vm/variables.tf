@@ -1,18 +1,33 @@
-variable "datacenter" {
+variable "datacenter_id" {
   type        = string
-  description = "vSphere datacenter name"
+  description = "Datacenter id (from the vsphere-network module)"
 }
 
-variable "cluster" {
+variable "resource_pool_id" {
   type        = string
-  default     = ""
-  description = "Compute cluster name; leave empty for a standalone ESXi host"
+  description = "Resource pool id to deploy VMs into"
 }
 
-variable "esxi_host" {
+variable "host_system_id" {
   type        = string
-  default     = ""
-  description = "ESXi host name/IP, used when cluster is empty"
+  default     = null
+  description = "Host system id, only used for standalone ESXi deployments"
+}
+
+variable "datastore_id" {
+  type        = string
+  description = "Datastore id"
+}
+
+variable "network_id" {
+  type        = string
+  description = "Network/port group id"
+}
+
+variable "folder_path" {
+  type        = string
+  default     = null
+  description = "Optional inventory folder path for VM placement"
 }
 
 variable "guest_id" {
@@ -34,8 +49,14 @@ variable "template_name" {
 }
 
 variable "vm_count" {
-  type    = number
-  default = 10
+  type        = number
+  default     = 10
+  description = "Number of VMs to create"
+
+  validation {
+    condition     = var.vm_count > 0 && var.vm_count <= 254
+    error_message = "vm_count must be between 1 and 254."
+  }
 }
 
 variable "vm_name_prefix" {
@@ -48,25 +69,26 @@ variable "gateway" {
   default = "192.168.1.1"
 }
 
-# --- Fixed infrastructure values (hardcoded per requirements) ---
-variable "datastore_name" {
-  type    = string
-  default = ""
-}
-
-variable "network_name" {
-  type    = string
-  default = "port-group"
-}
-
 variable "ip_start" {
-  type    = string
-  default = "192.168.1.200"
+  type        = string
+  default     = "192.168.1.200"
+  description = "First IP address; subsequent VMs increment the last octet"
+
+  validation {
+    condition     = can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", var.ip_start))
+    error_message = "ip_start must be a valid IPv4 address, e.g. 192.168.1.200."
+  }
 }
 
 variable "netmask_cidr" {
-  type    = number
-  default = 24
+  type        = number
+  default     = 24
+  description = "Netmask length (CIDR)"
+
+  validation {
+    condition     = var.netmask_cidr >= 0 && var.netmask_cidr <= 32
+    error_message = "netmask_cidr must be between 0 and 32."
+  }
 }
 
 variable "dns_servers" {
@@ -89,3 +111,8 @@ variable "vm_disk_size_gb" {
   default = 40
 }
 
+variable "tag_ids" {
+  type        = list(string)
+  default     = []
+  description = "Optional list of vSphere tag IDs to assign to each VM"
+}
