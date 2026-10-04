@@ -51,7 +51,7 @@ variable "gateway" {
 # --- Fixed infrastructure values (hardcoded per requirements) ---
 variable "datastore_name" {
   type    = string
-  default = "datastore-1"
+  default = ""
 }
 
 variable "network_name" {
