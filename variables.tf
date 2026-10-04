@@ -56,3 +56,48 @@ variable "gateway" {
   type        = string
   default     = "192.168.1.1"
 }
+
+variable "datastore_name" {
+  description = "Datastore for the VMs"
+  type        = string
+}
+
+variable "network_name" {
+  description = "Port group / network name"
+  type        = string
+}
+
+variable "ip_start" {
+  description = "First IP address; subsequent VMs increment the last octet"
+  type        = string
+}
+
+variable "netmask_cidr" {
+  description = "Netmask length (CIDR)"
+  type        = number
+  default     = 24
+}
+
+variable "dns_servers" {
+  description = "DNS servers for the VMs"
+  type        = list(string)
+  default     = []
+}
+
+variable "vm_cpus" {
+  description = "vCPUs per VM"
+  type        = number
+  default     = 2
+}
+
+variable "vm_memory" {
+  description = "Memory per VM in MB"
+  type        = number
+  default     = 4096
+}
+
+variable "vm_disk_size_gb" {
+  description = "Disk size per VM in GB"
+  type        = number
+  default     = 40
+}

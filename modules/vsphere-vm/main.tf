@@ -14,8 +14,8 @@ resource "vsphere_virtual_machine" "vm" {
   resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
   datastore_id     = data.vsphere_datastore.datastore.id
 
-  num_cpus = 2
-  memory   = 4096
+  num_cpus = var.vm_cpus
+  memory   = var.vm_memory
   guest_id = data.vsphere_virtual_machine.template.guest_id
 
   scsi_type = data.vsphere_virtual_machine.template.scsi_type
@@ -27,7 +27,7 @@ resource "vsphere_virtual_machine" "vm" {
 
   disk {
     label            = "disk0"
-    size             = 40
+    size             = var.vm_disk_size_gb
     eagerly_scrub    = data.vsphere_virtual_machine.template.disks[0].eagerly_scrub
     thin_provisioned = data.vsphere_virtual_machine.template.disks[0].thin_provisioned
   }
@@ -46,7 +46,9 @@ resource "vsphere_virtual_machine" "vm" {
         ipv4_netmask = var.netmask_cidr
       }
 
-      ipv4_gateway = var.gateway
+      ipv4_gateway    = var.gateway
+      dns_server_list = var.dns_servers
     }
   }
 }
+

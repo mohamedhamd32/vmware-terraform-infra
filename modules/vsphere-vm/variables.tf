@@ -48,3 +48,23 @@ variable "netmask_cidr" {
   type    = number
   default = 24
 }
+
+variable "dns_servers" {
+  type    = list(string)
+  default = []
+}
+
+variable "vm_cpus" {
+  type    = number
+  default = 2
+}
+
+variable "vm_memory" {
+  type    = number
+  default = 4096
+}
+
+variable "vm_disk_size_gb" {
+  type    = number
+  default = 40
+}
