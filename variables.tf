@@ -2,14 +2,14 @@ variable "vsphere_user" {
   description = "vSphere username"
   type        = string
   sensitive   = true
-  default     = "admin@vsphere.local"
+  #default     = var.vsphere_user
 }
 
 variable "vsphere_password" {
   description = "vSphere password"
   type        = string
   sensitive   = true
-  default     = "P@ssw0rd@123"
+  #default     = var.vsphere_password
 }
 
 variable "vsphere_server" {
