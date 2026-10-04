@@ -1,14 +1,10 @@
 locals {
-  # Build a sequential IP list starting at var.ip_start, one per VM.
-  # Example: ip_start = 192.168.1.200, vm_count = 10 -> .200 .. .209
-  ip_start_parts = split(".", var.ip_start)
-  ip_base_prefix = "${local.ip_start_parts[0]}.${local.ip_start_parts[1]}.${local.ip_start_parts[2]}"
-  ip_start_host  = tonumber(local.ip_start_parts[3])
+  # Sequential IPs starting at var.ip_start: 192.168.1.200 .. 192.168.1.209 for vm_count = 10
+  ip_parts = split(".", var.ip_start)
+  ip_base  = "${local.ip_parts[0]}.${local.ip_parts[1]}.${local.ip_parts[2]}"
+  ip_first = tonumber(local.ip_parts[3])
 
-  vm_ips = [
-    for i in range(var.vm_count) :
-    "${local.ip_base_prefix}.${local.ip_start_host + i}"
-  ]
+  vm_ips = [for i in range(var.vm_count) : "${local.ip_base}.${local.ip_first + i}"]
 }
 
 resource "vsphere_virtual_machine" "vm" {
@@ -18,8 +14,8 @@ resource "vsphere_virtual_machine" "vm" {
   resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
   datastore_id     = data.vsphere_datastore.datastore.id
 
-  num_cpus = var.vm_cpus
-  memory   = var.vm_memory
+  num_cpus = 2
+  memory   = 4096
   guest_id = data.vsphere_virtual_machine.template.guest_id
 
   scsi_type = data.vsphere_virtual_machine.template.scsi_type
@@ -31,7 +27,7 @@ resource "vsphere_virtual_machine" "vm" {
 
   disk {
     label            = "disk0"
-    size             = var.vm_disk_size_gb
+    size             = 40
     eagerly_scrub    = data.vsphere_virtual_machine.template.disks[0].eagerly_scrub
     thin_provisioned = data.vsphere_virtual_machine.template.disks[0].thin_provisioned
   }
@@ -50,8 +46,7 @@ resource "vsphere_virtual_machine" "vm" {
         ipv4_netmask = var.netmask_cidr
       }
 
-      ipv4_gateway    = var.gateway
-      dns_server_list = var.dns_servers
+      ipv4_gateway = var.gateway
     }
   }
 }
