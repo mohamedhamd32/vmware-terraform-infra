@@ -48,7 +48,25 @@ variable "datastore_name" {
 variable "network_name" {
   description = "Port group / network name"
   type        = string
-  default     = "port-group"
+  default     = "VM NETWORK"
+}
+
+variable "port_group_host" {
+  description = "ESXi host on which to manage the standard port group when using a cluster; standalone deployments use esxi_host"
+  type        = string
+  default     = "192.168.1.100"
+}
+
+variable "virtual_switch_name" {
+  description = "Standard vSwitch to which the port group is attached"
+  type        = string
+  default     = "vSwitch0"
+}
+
+variable "vlan_id" {
+  description = "VLAN ID for the port group; 0 means untagged"
+  type        = number
+  default     = 0
 }
 
 variable "folder_path" {

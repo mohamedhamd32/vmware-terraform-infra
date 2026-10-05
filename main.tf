@@ -5,9 +5,22 @@ provider "vsphere" {
   allow_unverified_ssl = var.allow_unverified_ssl
 }
 
+# Ensures the standard port group exists on the ESXi host before it is looked up.
+module "port_group" {
+  source = "./modules/vsphere-port-group"
+
+  datacenter          = var.datacenter
+  host                = var.cluster == "" ? var.esxi_host : var.port_group_host
+  name                = var.network_name
+  virtual_switch_name = var.virtual_switch_name
+  vlan_id             = var.vlan_id
+}
+
 # Resolves datacenter/cluster-or-host/datastore/network/folder once, shared by the VM module.
 module "network" {
   source = "./modules/vsphere-network"
+
+  depends_on = [module.port_group]
 
   datacenter     = var.datacenter
   cluster        = var.cluster

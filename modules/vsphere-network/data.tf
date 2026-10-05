@@ -23,4 +23,8 @@ data "vsphere_datastore" "datastore" {
 data "vsphere_network" "network" {
   name          = var.network_name
   datacenter_id = data.vsphere_datacenter.dc.id
+
+  filter {
+    network_type = "Network"
+  }
 }
