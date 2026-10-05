@@ -48,7 +48,7 @@ variable "datastore_name" {
 variable "network_name" {
   description = "Port group / network name"
   type        = string
-  default     = "VM NETWORK"
+  default     = "VM Network
 }
 
 variable "port_group_host" {
