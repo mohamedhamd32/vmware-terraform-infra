@@ -18,10 +18,10 @@ locals {
 }
 
 resource "vsphere_virtual_machine" "vm" {
-  for_each = local.vm_map
+  for_each = local.vm_map //dict of VMs keyed by name 
 
-  name             = each.key
-  resource_pool_id = var.resource_pool_id
+  name             = each.key // VM name derived from the key in local.vm_map
+  resource_pool_id = var.resource_pool_id // Resource pool ID for the VM (default is the root resource pool)
   host_system_id   = var.host_system_id
   datastore_id     = var.datastore_id
   folder           = var.folder_path
