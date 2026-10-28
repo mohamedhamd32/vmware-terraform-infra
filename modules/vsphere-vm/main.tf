@@ -5,7 +5,14 @@ locals {
   # Key VMs by name so deleting one does not renumber the others.
   vm_map = {
     for i in range(var.vm_count) :
-    "${var.vm_name_prefix}-${format("%02d", i + 1)}" => {}
+    "${var.vm_name_prefix}-${format("%02d", i + 1)}" => {
+      mac_address = format(
+        "00:50:56:%02x:%02x:%02x",
+        floor(i / 65536),
+        floor(i / 256) % 256,
+        i % 256
+      )
+    }
   }
 }
 
@@ -33,6 +40,7 @@ resource "vsphere_virtual_machine" "vm" {
   network_interface {
     network_id   = var.network_id
     adapter_type = local.use_template ? local.template.network_interface_types[0] : "vmxnet3"
+    mac_address  = each.value.mac_address
   }
 
   disk {

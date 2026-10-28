@@ -45,6 +45,7 @@ Once imported, a later plan/apply will detect if the port group was deleted and 
 
 - **`for_each` instead of `count`** for VM instances, keyed by VM name. Removing VM #3 out of 10 no longer forces Terraform to destroy/recreate #4-#10 due to index shifting — a classic problem with `count`-based VM fleets.
 - **Variable validation** on `vm_count` to fail fast on invalid input instead of surfacing a cryptic provider error.
+- **Static MAC addresses** are deterministically assigned to each VM from VMware's `00:50:56:00:00:00`–`00:50:56:3F:FF:FF` static range and exposed in the `vm_mac_addresses` output. Ensure these addresses do not conflict with manually assigned addresses elsewhere in the vSphere environment.
 - **Optional template cloning**: leave `template_name` empty to create blank VMs (with `guest_id` and an optional `iso_path` for install media), or set it to clone from an existing template with hostname customization. Guest network configuration is left to the operating system or Kickstart.
 - **Optional inventory folder** via `folder_path` — when set, `vsphere-network` creates the folder and every VM is placed inside it.
 - **Optional tagging** via `tag_ids` — pass existing vSphere tag IDs (created separately with `vsphere_tag_category`/`vsphere_tag`) to have them applied to every VM.

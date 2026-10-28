@@ -8,6 +8,11 @@ output "vm_ip_addresses" {
   value       = module.vms.vm_ip_addresses
 }
 
+output "vm_mac_addresses" {
+  description = "Static MAC addresses assigned to the VMs, keyed by VM name"
+  value       = module.vms.vm_mac_addresses
+}
+
 output "network_summary" {
   description = "Resolved network/compute identifiers used for VM placement"
   value = {
