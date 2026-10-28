@@ -45,11 +45,41 @@ Once imported, a later plan/apply will detect if the port group was deleted and 
 
 - **`for_each` instead of `count`** for VM instances, keyed by VM name. Removing VM #3 out of 10 no longer forces Terraform to destroy/recreate #4-#10 due to index shifting — a classic problem with `count`-based VM fleets.
 - **Variable validation** on `vm_count` to fail fast on invalid input instead of surfacing a cryptic provider error.
-- **Static MAC addresses** are deterministically assigned to each VM from VMware's `00:50:56:00:00:00`–`00:50:56:3F:FF:FF` static range and exposed in the `vm_mac_addresses` output. Ensure these addresses do not conflict with manually assigned addresses elsewhere in the vSphere environment.
+- **Static MAC addresses** are read from [`modules/vsphere-vm/mac_addresses.json`](./modules/vsphere-vm/mac_addresses.json) and assigned in order to VMs. The file contains ten unique addresses from VMware's `00:50:56:80:00:00`–`00:50:56:BF:FF:FF` static range; edit it to use different addresses, ensuring they remain unique and do not conflict elsewhere in the vSphere environment. `vm_count` cannot exceed the number of addresses in the file. The assigned addresses are exposed in the `vm_mac_addresses` output.
 - **Optional template cloning**: leave `template_name` empty to create blank VMs (with `guest_id` and an optional `iso_path` for install media), or set it to clone from an existing template with hostname customization. Guest network configuration is left to the operating system or Kickstart.
 - **Optional inventory folder** via `folder_path` — when set, `vsphere-network` creates the folder and every VM is placed inside it.
 - **Optional tagging** via `tag_ids` — pass existing vSphere tag IDs (created separately with `vsphere_tag_category`/`vsphere_tag`) to have them applied to every VM.
 - Credentials are `sensitive` variables with no defaults — supply them via `TF_VAR_vsphere_user` / `TF_VAR_vsphere_password` or a gitignored `terraform.tfvars`, never commit them.
+
+## RHEL 8.8 Kickstart installation
+
+Terraform creates each VM with a unique static MAC address and attaches the ISO configured by `iso_path`. The DHCP server must have a reservation for each VM MAC before it boots; configure each reservation with the intended IP, gateway, and DNS settings. The VM's installer network must be able to reach the Bootstrap Server at `192.168.1.66`.
+
+To make the RHEL 8.3 installer fetch its Kickstart file automatically, add the Kickstart URL to the kernel boot arguments in the RHEL ISO's GRUB configuration, then use that customized ISO for the VMs:
+
+1. Make a working copy of the RHEL 8.3 ISO and extract its contents.
+2. Edit the GRUB menu configuration for UEFI boot at `EFI/BOOT/grub.cfg`. If the VM uses legacy BIOS boot, edit `isolinux/isolinux.cfg` instead.
+3. Find the boot entry's kernel command line, usually the line beginning with `linuxefi` in the UEFI GRUB file (or `linux` in the BIOS ISOLINUX file). Append these arguments to that same line:
+
+   ```text
+   ip=dhcp inst.ks=http://192.168.1.66/my-kickstart-file/rhel8.cfg
+   ```
+
+   For example, a UEFI GRUB entry will look like this (keep its existing arguments and append the two shown):
+
+   ```grub
+   menuentry 'Install Red Hat Enterprise Linux 8.3' {
+       linuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=RHEL-8-3-x86_64-dvd ip=dhcp inst.ks=http://192.168.1.66/my-kickstart-file/rhel8.cfg
+       initrdefi /images/pxeboot/initrd.img
+   }
+   ```
+
+   The URL belongs on the `linuxefi`/`linux` kernel line, not the `initrdefi`/`initrd` line. Preserve the boot arguments and paths that are already in your ISO's entry; ISO volume labels may differ.
+4. Rebuild the ISO as a bootable image, preserving its BIOS and UEFI boot settings, and upload it to the vSphere datastore.
+5. Set root `iso_path` in `terraform.tfvars` to the customized ISO's datastore path, then run `terraform plan` and `terraform apply`.
+6. Confirm the VM's MAC-to-IP reservation is active. On boot, the installer obtains the reserved address by DHCP, downloads `http://192.168.1.66/my-kickstart-file/rhel8.cfg`, and performs the unattended installation.
+
+The Kickstart file must be served over HTTP at that exact path, and the DHCP reservation/network must be available to the installer before Kickstart is fetched. Verify the URL is reachable from the VM's installation network before provisioning multiple VMs.
 
 ## Usage
 

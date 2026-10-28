@@ -54,8 +54,8 @@ variable "vm_count" {
   description = "Number of VMs to create"
 
   validation {
-    condition     = var.vm_count > 0 && var.vm_count <= 4194304
-    error_message = "vm_count must be between 1 and 4194304 to fit VMware's static MAC address range."
+    condition     = var.vm_count > 0 && var.vm_count <= 10
+    error_message = "vm_count must be between 1 and 10 because mac_addresses.json contains 10 addresses."
   }
 }
 

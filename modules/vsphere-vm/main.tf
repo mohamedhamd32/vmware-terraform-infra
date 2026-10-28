@@ -1,17 +1,15 @@
 locals {
   use_template = var.template_name != ""
   template     = local.use_template ? data.vsphere_virtual_machine.template[0] : null
+  mac_addresses = jsondecode(
+    file("${path.module}/mac_addresses.json")
+  )
 
   # Key VMs by name so deleting one does not renumber the others.
   vm_map = {
     for i in range(var.vm_count) :
     "${var.vm_name_prefix}-${format("%02d", i + 1)}" => {
-      mac_address = format(
-        "00:50:56:%02x:%02x:%02x",
-        floor(i / 65536),
-        floor(i / 256) % 256,
-        i % 256
-      )
+      mac_address = local.mac_addresses[i]
     }
   }
 }
