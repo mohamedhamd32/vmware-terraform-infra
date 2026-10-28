@@ -1,27 +1,19 @@
 locals {
-  # Sequential IPs starting at var.ip_start
-  ip_parts = split(".", var.ip_start)
-  ip_base  = "${local.ip_parts[0]}.${local.ip_parts[1]}.${local.ip_parts[2]}"
-  ip_first = tonumber(local.ip_parts[3])
-
   use_template = var.template_name != ""
   template     = local.use_template ? data.vsphere_virtual_machine.template[0] : null
 
-  # for_each keyed by VM name instead of count: deleting one VM no longer
-  # forces recreation/renumbering of every VM after it.
+  # Key VMs by name so deleting one does not renumber the others.
   vm_map = {
     for i in range(var.vm_count) :
-    "${var.vm_name_prefix}-${format("%02d", i + 1)}" => {
-      ip = "${local.ip_base}.${local.ip_first + i}"
-    }
+    "${var.vm_name_prefix}-${format("%02d", i + 1)}" => {}
   }
 }
 
 resource "vsphere_virtual_machine" "vm" {
-  for_each = local.vm_map //dict of VMs keyed by name 
+  for_each = local.vm_map //dictionary of VMs keyed by name
 
-  name             = each.key // VM name derived from the key in local.vm_map
-  resource_pool_id = var.resource_pool_id // Resource pool ID for the VM (default is the root resource pool)
+  name             = each.key             // VM name derived from the key in local.vm_map
+  resource_pool_id = var.resource_pool_id // Resource pool ID for the VM (default is the root resource pool) defined in output variables of the vsphere network module
   host_system_id   = var.host_system_id
   datastore_id     = var.datastore_id
   folder           = var.folder_path
@@ -68,14 +60,6 @@ resource "vsphere_virtual_machine" "vm" {
           host_name = each.key
           domain    = "local"
         }
-
-        network_interface {
-          ipv4_address = each.value.ip
-          ipv4_netmask = var.netmask_cidr
-        }
-
-        ipv4_gateway    = var.gateway
-        dns_server_list = var.dns_servers
       }
     }
   }

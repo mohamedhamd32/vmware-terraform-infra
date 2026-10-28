@@ -4,6 +4,6 @@ output "vm_names" {
 }
 
 output "vm_ip_addresses" {
-  description = "Static IP addresses assigned to the VMs, keyed by VM name"
-  value       = { for name, vm in local.vm_map : name => vm.ip }
+  description = "Guest IP addresses reported by VMware Tools, keyed by VM name"
+  value       = { for name, vm in vsphere_virtual_machine.vm : name => vm.default_ip_address }
 }

@@ -54,46 +54,14 @@ variable "vm_count" {
   description = "Number of VMs to create"
 
   validation {
-    condition     = var.vm_count > 0 && var.vm_count <= 254
-    error_message = "vm_count must be between 1 and 254."
+    condition     = var.vm_count > 0
+    error_message = "vm_count must be greater than 0."
   }
 }
 
 variable "vm_name_prefix" {
   type    = string
   default = "app-vm"
-}
-
-variable "gateway" {
-  type    = string
-  default = "192.168.1.1"
-}
-
-variable "ip_start" {
-  type        = string
-  default     = "192.168.1.200"
-  description = "First IP address; subsequent VMs increment the last octet"
-
-  validation {
-    condition     = can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", var.ip_start))
-    error_message = "ip_start must be a valid IPv4 address, e.g. 192.168.1.200."
-  }
-}
-
-variable "netmask_cidr" {
-  type        = number
-  default     = 24
-  description = "Netmask length (CIDR)"
-
-  validation {
-    condition     = var.netmask_cidr >= 0 && var.netmask_cidr <= 32
-    error_message = "netmask_cidr must be between 0 and 32."
-  }
-}
-
-variable "dns_servers" {
-  type    = list(string)
-  default = []
 }
 
 variable "vm_cpus" {

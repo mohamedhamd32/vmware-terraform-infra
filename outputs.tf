@@ -4,7 +4,7 @@ output "vm_names" {
 }
 
 output "vm_ip_addresses" {
-  description = "Static IP addresses assigned to the VMs, keyed by VM name"
+  description = "Guest IP addresses reported by VMware Tools, keyed by VM name"
   value       = module.vms.vm_ip_addresses
 }
 

@@ -46,11 +46,6 @@ module "vms" {
 
   vm_count       = var.vm_count
   vm_name_prefix = var.vm_name_prefix
-  gateway        = var.gateway
-
-  ip_start     = var.ip_start
-  netmask_cidr = var.netmask_cidr
-  dns_servers  = var.dns_servers
 
   vm_cpus         = var.vm_cpus
   vm_memory       = var.vm_memory

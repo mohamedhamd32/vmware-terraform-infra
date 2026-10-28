@@ -48,7 +48,9 @@ variable "datastore_name" {
 variable "network_name" {
   description = "Port group / network name"
   type        = string
-  default     = "VM Network"
+  default     = "VM Network" //run 'terraform import vsphere_network.network <datacenter>/<network_name>' if needed
+  # command --> terraform import "module.port_group.vsphere_host_port_group.vm_network" "tf-HostPortGroup:host-<id>:VM NETWORK"
+  #replace <id> with the actual host ID and ensure the network name matches the default value above its (host-10) in our environment
 }
 
 variable "port_group_host" {
@@ -103,30 +105,6 @@ variable "vm_name_prefix" {
   description = "Prefix used for VM names"
   type        = string
   default     = "app-vm"
-}
-
-variable "gateway" {
-  description = "Default gateway for the VMs' network"
-  type        = string
-  default     = "192.168.1.1"
-}
-
-variable "ip_start" {
-  description = "First IP address; subsequent VMs increment the last octet"
-  type        = string
-  default     = "192.168.1.200"
-}
-
-variable "netmask_cidr" {
-  description = "Netmask length (CIDR)"
-  type        = number
-  default     = 24
-}
-
-variable "dns_servers" {
-  description = "DNS servers for the VMs"
-  type        = list(string)
-  default     = []
 }
 
 variable "vm_cpus" {

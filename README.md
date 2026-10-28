@@ -44,8 +44,8 @@ Once imported, a later plan/apply will detect if the port group was deleted and 
 ## Key design choices
 
 - **`for_each` instead of `count`** for VM instances, keyed by VM name. Removing VM #3 out of 10 no longer forces Terraform to destroy/recreate #4-#10 due to index shifting — a classic problem with `count`-based VM fleets.
-- **Variable validation** on `vm_count`, `ip_start`, and `netmask_cidr` to fail fast on bad input instead of surfacing a cryptic provider error.
-- **Optional template cloning**: leave `template_name` empty to create blank VMs (with `guest_id` and an optional `iso_path` for install media), or set it to clone from an existing template with full guest customization (static IP, gateway, DNS).
+- **Variable validation** on `vm_count` to fail fast on invalid input instead of surfacing a cryptic provider error.
+- **Optional template cloning**: leave `template_name` empty to create blank VMs (with `guest_id` and an optional `iso_path` for install media), or set it to clone from an existing template with hostname customization. Guest network configuration is left to the operating system or Kickstart.
 - **Optional inventory folder** via `folder_path` — when set, `vsphere-network` creates the folder and every VM is placed inside it.
 - **Optional tagging** via `tag_ids` — pass existing vSphere tag IDs (created separately with `vsphere_tag_category`/`vsphere_tag`) to have them applied to every VM.
 - Credentials are `sensitive` variables with no defaults — supply them via `TF_VAR_vsphere_user` / `TF_VAR_vsphere_password` or a gitignored `terraform.tfvars`, never commit them.
@@ -66,9 +66,6 @@ template_name  = "ubuntu-template"
 vm_count       = 10
 vm_name_prefix = "app-vm"
 
-ip_start     = "192.168.1.200"
-netmask_cidr = 24
-gateway      = "192.168.1.1"
 ```
 
 ```bash
@@ -90,5 +87,5 @@ terraform apply
 ## Possible next steps
 
 - Split tagging into its own `modules/vsphere-tags` module if tag/category management needs to be codified rather than passed in as existing IDs.
-- Add `terraform test` (native in Terraform 1.6+) to cover the IP-range and validation logic without touching real infrastructure.
+- Add `terraform test` (native in Terraform 1.6+) to cover validation logic without touching real infrastructure.
 - Move state to a remote backend (Terraform Cloud, S3 + DynamoDB) with locking before multiple people operate on this.
