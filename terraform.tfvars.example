@@ -1,0 +1,20 @@
+# Provide credentials through TF_VAR_vsphere_user and TF_VAR_vsphere_password.
+vsphere_server       = "vcenter.example.test"
+esxi_host            = "esxi.example.test"
+allow_unverified_ssl = false
+
+datacenter     = "Datacenter"
+cluster        = ""
+datastore_name = "datastore-1"
+network_name   = "VM Network"
+template_name  = ""
+
+vm_count       = 2
+vm_name_prefix = "app-vm"
+
+vm_cpus         = 2
+vm_memory       = 4096
+vm_disk_size_gb = 40
+
+iso_path = ""
+guest_id = "rhel8_64Guest"

@@ -2,6 +2,12 @@
 
 Modular Terraform project to provision virtual machines on VMware vSphere using composable modules.
 
+## CV-ready project summary
+
+Designed a modular Terraform solution for provisioning VMware vSphere virtual machines. Implemented reusable networking and compute modules, static MAC assignment, optional template cloning, and configurable VM sizing, folders, and tags.
+
+**Technologies:** Terraform, HCL, VMware vSphere, infrastructure as code.
+
 ## Architecture
 
 ```
@@ -51,25 +57,25 @@ Once imported, a later plan/apply will detect if the port group was deleted and 
 - **Optional tagging** via `tag_ids` — pass existing vSphere tag IDs (created separately with `vsphere_tag_category`/`vsphere_tag`) to have them applied to every VM.
 - Credentials are `sensitive` variables with no defaults — supply them via `TF_VAR_vsphere_user` / `TF_VAR_vsphere_password` or a gitignored `terraform.tfvars`, never commit them.
 
-## RHEL 8.8 Kickstart installation
+## Automated RHEL installation with Kickstart
 
-Terraform creates each VM with a unique static MAC address and attaches the ISO configured by `iso_path`. The DHCP server must have a reservation for each VM MAC before it boots; configure each reservation with the intended IP, gateway, and DNS settings. The VM's installer network must be able to reach the Bootstrap Server at `192.168.1.66`.
+Terraform creates each VM with a unique static MAC address and attaches the ISO configured by `iso_path`. Before boot, configure a DHCP reservation for each VM MAC with the intended address, gateway, and DNS settings. The installer network must be able to reach a web server hosting the Kickstart file.
 
-To make the RHEL 8.3 installer fetch its Kickstart file automatically, add the Kickstart URL to the kernel boot arguments in the RHEL ISO's GRUB configuration, then use that customized ISO for the VMs:
+To make the RHEL installer fetch its Kickstart file automatically, add the Kickstart URL to the kernel boot arguments in the installation ISO's GRUB configuration, then use that customized ISO for the VMs:
 
-1. Make a working copy of the RHEL 8.3 ISO and extract its contents.
+1. Make a working copy of the RHEL ISO and extract its contents.
 2. Edit the GRUB menu configuration for UEFI boot at `EFI/BOOT/grub.cfg`. If the VM uses legacy BIOS boot, edit `isolinux/isolinux.cfg` instead.
 3. Find the boot entry's kernel command line, usually the line beginning with `linuxefi` in the UEFI GRUB file (or `linux` in the BIOS ISOLINUX file). Append these arguments to that same line:
 
    ```text
-   ip=dhcp inst.ks=http://192.168.1.66/my-kickstart-file/rhel8.cfg
+   ip=dhcp inst.ks=http://kickstart.example.test/my-kickstart-file/rhel8.cfg
    ```
 
    For example, a UEFI GRUB entry will look like this (keep its existing arguments and append the two shown):
 
    ```grub
-   menuentry 'Install Red Hat Enterprise Linux 8.3' {
-       linuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=RHEL-8-3-x86_64-dvd ip=dhcp inst.ks=http://192.168.1.66/my-kickstart-file/rhel8.cfg
+   menuentry 'Install Red Hat Enterprise Linux 8' {
+       linuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=RHEL-8-x86_64-dvd ip=dhcp inst.ks=http://kickstart.example.test/my-kickstart-file/rhel8.cfg
        initrdefi /images/pxeboot/initrd.img
    }
    ```
@@ -77,36 +83,28 @@ To make the RHEL 8.3 installer fetch its Kickstart file automatically, add the K
    The URL belongs on the `linuxefi`/`linux` kernel line, not the `initrdefi`/`initrd` line. Preserve the boot arguments and paths that are already in your ISO's entry; ISO volume labels may differ.
 4. Rebuild the ISO as a bootable image, preserving its BIOS and UEFI boot settings, and upload it to the vSphere datastore.
 5. Set root `iso_path` in `terraform.tfvars` to the customized ISO's datastore path, then run `terraform plan` and `terraform apply`.
-6. Confirm the VM's MAC-to-IP reservation is active. On boot, the installer obtains the reserved address by DHCP, downloads `http://192.168.1.66/my-kickstart-file/rhel8.cfg`, and performs the unattended installation.
+6. Confirm the VM's MAC-to-address reservation is active. On boot, the installer obtains its reserved address by DHCP, downloads the Kickstart file, and performs the unattended installation.
 
-The Kickstart file must be served over HTTP at that exact path, and the DHCP reservation/network must be available to the installer before Kickstart is fetched. Verify the URL is reachable from the VM's installation network before provisioning multiple VMs.
+Replace `kickstart.example.test` with a hostname reachable from the VM installation network. The Kickstart file must be served over HTTP at the configured path, and the DHCP reservation/network must be available before Kickstart is fetched. Verify the URL is reachable before provisioning multiple VMs.
 
 ## Usage
 
-```hcl
-# terraform.tfvars
-datacenter     = "Datacenter"
-cluster        = ""               # set esxi_host for standalone ESXi
-esxi_host      = "192.168.1.100"
-datastore_name = "datastore-1"
-network_name   = "VM NETWORK"
-virtual_switch_name = "vSwitch0"
-vlan_id        = 0
-template_name  = "ubuntu-template"
+Copy `terraform.tfvars.example` to `terraform.tfvars`, then replace the example values with your own vSphere inventory details. The local `terraform.tfvars` file is gitignored.
 
-vm_count       = 10
-vm_name_prefix = "app-vm"
+Supply credentials through environment variables rather than committing them:
 
+```powershell
+$env:TF_VAR_vsphere_user = "your-vsphere-user"
+$env:TF_VAR_vsphere_password = "your-vsphere-password"
 ```
 
 ```bash
-export TF_VAR_vsphere_user="admin@vsphere.local"
-export TF_VAR_vsphere_password="P@ssw0rd@123"
-
 terraform init
 terraform plan
 terraform apply
 ```
+
+Use your platform's environment-variable syntax for `TF_VAR_vsphere_user` and `TF_VAR_vsphere_password`. Avoid putting real credentials in shell history or source control.
 
 ## Requirements
 

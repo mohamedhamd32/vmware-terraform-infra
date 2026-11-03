@@ -11,9 +11,8 @@ variable "vsphere_password" {
 }
 
 variable "vsphere_server" {
-  description = "vCenter/ESXi server IP"
+  description = "vCenter/ESXi server hostname or address"
   type        = string
-  default     = "192.168.1.102"
 }
 
 variable "allow_unverified_ssl" {
@@ -56,7 +55,7 @@ variable "network_name" {
 variable "port_group_host" {
   description = "ESXi host on which to manage the standard port group when using a cluster; standalone deployments use esxi_host"
   type        = string
-  default     = "192.168.1.100"
+  default     = ""
 }
 
 variable "virtual_switch_name" {
